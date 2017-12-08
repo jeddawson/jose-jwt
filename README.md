@@ -960,3 +960,68 @@ $http.post("/api/v1/function", {
     // Request failed! Do something with the response.
 });
 ```
+
+## .Net Core 2.0 ECDSA Example with pre-generated keys
+
+### Generate Certificate
+The first step is to generate the .p12 file that will be loaded by the app. To do this with openssl, run the following:
+
+```openssl ecparam -name secp256r1 -genkey -noout -out ecp256r1.pem
+openssl req -new -x509 -days 1826 -key ecp256r1.pem -out certificate.crt
+openssl pkcs12 -export -out key.p12 -inkey ecp256r1.pem -in certificate.crt```
+
+Copy the resulting `key.p12` to your project directory (if not there already).
+
+### Console App
+Here's a very simple console app that demostrates loading the certificate, retrieving both the private and public key, encoding a JWT, and finally decoding the JWT with the public key.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using Jose;
+
+namespace AsymetricJWTExp
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var claims = new Dictionary<string, string>()
+            {
+                {"claim1", "value"},
+                {"claim2", "value"}
+            };
+
+            //Load the certificate that was generated via openssl
+            var certificate = new X509Certificate2("key.p12", "password");
+
+            //Retrieve the keys
+            var privateKey = certificate.GetECDsaPrivateKey(); //Added in .Net 4.6.1
+            var publicKey = certificate.GetECDsaPublicKey();   //Added in .Net 4.6.1
+
+            //Use the private key to encode a JWT
+            var jwt = Jose.JWT.Encode(claims, privateKey, JwsAlgorithm.ES256);
+
+            Console.WriteLine(jwt);
+
+            //Use the public key to decode the JWT
+            var decode = Jose.JWT.Decode<Dictionary<string, string>>(jwt, publicKey);
+
+            Console.WriteLine("Claims:");
+            foreach(var pair in decode){
+                Console.WriteLine($"\t{pair.Key}:{pair.Value}");
+            }
+        }
+
+    }
+}
+```
+
+Running with `dotnet run` should give you something like:
+```
+eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGFpbTEiOiJ2YWx1ZSIsImNsYWltMiI6InZhbHVlIn0.YSkpDDErcH7wgm5DPS34vhZiBjJCqQh7VvnQMAg_5P3vVBFjsORCQ8VuWjq0rHKh-xX-fgncZiS8-bJ6a5SWDA
+Claims:
+	claim1:value
+	claim2:value
+```
