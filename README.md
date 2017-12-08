@@ -961,12 +961,13 @@ $http.post("/api/v1/function", {
 });
 ```
 
-## .Net Core 2.0 ECDSA Example with pre-generated keys
+## .Net Core 2 ECDSA example with pre-generated keys
 
 ### Generate Certificate
 The first step is to generate the .p12 file that will be loaded by the app. To do this with openssl, run the following:
 
-```openssl ecparam -name secp256r1 -genkey -noout -out ecp256r1.pem
+```bash
+openssl ecparam -name secp256r1 -genkey -noout -out ecp256r1.pem
 openssl req -new -x509 -days 1826 -key ecp256r1.pem -out certificate.crt
 openssl pkcs12 -export -out key.p12 -inkey ecp256r1.pem -in certificate.crt
 ```
@@ -982,7 +983,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using Jose;
 
-namespace AsymetricJWTExp
+namespace AsymmetricJWT
 {
     class Program
     {
@@ -1020,6 +1021,7 @@ namespace AsymetricJWTExp
 ```
 
 Running with `dotnet run` should give you something like:
+
 ```
 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGFpbTEiOiJ2YWx1ZSIsImNsYWltMiI6InZhbHVlIn0.YSkpDDErcH7wgm5DPS34vhZiBjJCqQh7VvnQMAg_5P3vVBFjsORCQ8VuWjq0rHKh-xX-fgncZiS8-bJ6a5SWDA
 Claims:
