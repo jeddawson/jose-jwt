@@ -968,7 +968,8 @@ The first step is to generate the .p12 file that will be loaded by the app. To d
 
 ```openssl ecparam -name secp256r1 -genkey -noout -out ecp256r1.pem
 openssl req -new -x509 -days 1826 -key ecp256r1.pem -out certificate.crt
-openssl pkcs12 -export -out key.p12 -inkey ecp256r1.pem -in certificate.crt```
+openssl pkcs12 -export -out key.p12 -inkey ecp256r1.pem -in certificate.crt
+```
 
 Copy the resulting `key.p12` to your project directory (if not there already).
 
